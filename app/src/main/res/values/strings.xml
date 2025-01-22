@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Wi-Fi Companion</string>
+    <string name="device_admin_description">Allow app to manage Wi-Fi connection via ADB</string>
 </resources>
