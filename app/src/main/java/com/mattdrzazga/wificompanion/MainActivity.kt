@@ -7,36 +7,56 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.mattdrzazga.wificompanion.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var administrator: Administrator
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        administrator = Administrator(this)
 
-        if (!Administrator(this).isDeviceAdmin()) {
+        if (!administrator.isDeviceAdmin()) {
             log("This app is not a device admin. Run the following command to set it as a device admin:\n$ADB_SET_ADMIN")
         }
 
+        setupUi()
         processIntent(intent)
     }
 
-    private fun processIntent(intent: Intent) {
-        val administrator = Administrator(this)
+    private fun setupUi() {
+        binding.finishButton.setOnClickListener { finish() }
+        binding.removeAdminButton.setOnClickListener {
+            removeDeviceAdmin()
+            it.isEnabled = false
+        }
+    }
 
+    override fun onResume() {
+        super.onResume()
+        binding.removeAdminButton.isEnabled = administrator.isDeviceAdmin()
+    }
+
+    private fun processIntent(intent: Intent) {
         // Clear device admin if needed
         val shouldClearDeviceAdmin = intent.extras?.containsKey(CLEAR_DEVICE_ADMIN) ?: false
-        if (shouldClearDeviceAdmin && administrator.isDeviceAdmin()) {
-            administrator.removeDeviceOwnerApp()
-            log("Removed device admin")
-            finish()
-            return
+        if (shouldClearDeviceAdmin) {
+            if (removeDeviceAdmin()) {
+                log("Removed device admin")
+                finish()
+                return
+            }
         }
 
         val ssid: String? = intent.getStringExtra(ARG_SSID)
@@ -65,6 +85,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun removeDeviceAdmin(): Boolean {
+        if (administrator.isDeviceAdmin()) {
+            administrator.removeDeviceOwnerApp()
+            return true
+        }
+        return false
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -88,10 +116,14 @@ class MainActivity : AppCompatActivity() {
         private const val ARG_PASSWORD = "password"
         private const val ARG_SECURITY = "security"
 
-        private const val CMD_CLEAR_ADMIN = "adb shell am start -n com.mattdrzazga.wificompanion/.MainActivity --ez clear_device_admin true"
-        private const val CMD_WIFI_CONNECT = "adb shell am start -n com.mattdrzazga.wificompanion/.MainActivity --es ssid yourssid --es password yourpassword"
+        private const val CMD_CLEAR_ADMIN =
+            "adb shell am start -n com.mattdrzazga.wificompanion/.MainActivity --ez clear_device_admin true"
+        private const val CMD_WIFI_CONNECT =
+            "adb shell am start -n com.mattdrzazga.wificompanion/.MainActivity --es ssid yourssid --es password yourpassword"
 
-        private const val ADB_CLEAR_ADMIN = "adb shell dpm remove-active-admin com.mattdrzazga.wificompanion/.BindAdminReceiver"
-        private const val ADB_SET_ADMIN = "adb shell dpm set-device-owner com.mattdrzazga.wificompanion/.BindAdminReceiver"
+        private const val ADB_CLEAR_ADMIN =
+            "adb shell dpm remove-active-admin com.mattdrzazga.wificompanion/.BindAdminReceiver"
+        private const val ADB_SET_ADMIN =
+            "adb shell dpm set-device-owner com.mattdrzazga.wificompanion/.BindAdminReceiver"
     }
 }
