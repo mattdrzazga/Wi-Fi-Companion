@@ -63,12 +63,12 @@ class MainActivity : AppCompatActivity() {
         val password: String? = intent.getStringExtra(ARG_PASSWORD)
         val security: String? = intent.getStringExtra(ARG_SECURITY)
 
-        if (ssid != null && security != null && password != null) {
+        if (ssid != null && security == null && password == null) {
             log("Trying to connect to unprotected network $ssid")
 //            val wifiManager = WifiManager(this)
 //            wifiManager.connectToWifi(ssid, password)
 //            finish()
-        } else if (ssid != null) {
+        } else if (ssid != null && security != null && password != null) {
             log("Trying to connect to network: $ssid")
 //            val wifiManager = WifiManager(this)
 //            wifiManager.connectToWifi(ssid)
