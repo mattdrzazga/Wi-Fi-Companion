@@ -41,6 +41,12 @@ class MainActivity : AppCompatActivity() {
             removeDeviceAdmin()
             it.isEnabled = false
         }
+        binding.startServiceButton.setOnClickListener {
+            KeepAdbWifiOnService.start(this)
+        }
+        binding.stopServiceButton.setOnClickListener {
+            KeepAdbWifiOnService.stop(this)
+        }
     }
 
     override fun onResume() {
@@ -125,5 +131,8 @@ class MainActivity : AppCompatActivity() {
             "adb shell dpm remove-active-admin com.mattdrzazga.wificompanion/.BindAdminReceiver"
         private const val ADB_SET_ADMIN =
             "adb shell dpm set-device-owner com.mattdrzazga.wificompanion/.BindAdminReceiver"
+
+        private const val ADB_GRANT_WRITE_SECURE_SETTINGS =
+            "adb shell pm grant com.mattdrzazga.wificompanion android.permission.WRITE_SECURE_SETTINGS\n"
     }
 }
