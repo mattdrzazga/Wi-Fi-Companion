@@ -86,7 +86,10 @@ class KeepAdbWifiOnService : Service() {
 
         private const val TAG = "KeepAdbWifiOnService"
 
-        // corresponds to Settings.Global.ADB_WIFI_ENABLED
+        /** This value is annotated with @hide in the Android source code.
+         * @see: [android.provider.Settings.Global.ADB_WIFI_ENABLED]
+         * */
+        @Suppress("KDocUnresolvedReference")
         private const val ADB_WIFI_ENABLED = "adb_wifi_enabled"
 
         private const val MAX_RETRIES = 15
