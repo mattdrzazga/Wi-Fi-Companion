@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         administrator = Administrator(this)
 
         if (!administrator.isDeviceAdmin()) {
-            log("This app is not a device admin. Run the following command to set it as a device admin:\n$ADB_SET_ADMIN")
+            log("This app is not a device admin. Run the following command to set it as a device admin:\n${Adb.ADB_SET_ADMIN}")
         }
 
         setupUi()
@@ -128,18 +128,5 @@ class MainActivity : AppCompatActivity() {
         private const val ARG_SSID = "ssid"
         private const val ARG_PASSWORD = "password"
         private const val ARG_SECURITY = "security"
-
-        private const val CMD_CLEAR_ADMIN =
-            "adb shell am start -n com.mattdrzazga.wificompanion/.MainActivity --ez clear_device_admin true"
-        private const val CMD_WIFI_CONNECT =
-            "adb shell am start -n com.mattdrzazga.wificompanion/.MainActivity --es ssid yourssid --es password yourpassword"
-
-        private const val ADB_CLEAR_ADMIN =
-            "adb shell dpm remove-active-admin com.mattdrzazga.wificompanion/.BindAdminReceiver"
-        private const val ADB_SET_ADMIN =
-            "adb shell dpm set-device-owner com.mattdrzazga.wificompanion/.BindAdminReceiver"
-
-        private const val ADB_GRANT_WRITE_SECURE_SETTINGS =
-            "adb shell pm grant com.mattdrzazga.wificompanion android.permission.WRITE_SECURE_SETTINGS\n"
     }
 }
