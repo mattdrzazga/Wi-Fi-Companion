@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         administrator = Administrator(this)
 
         if (!administrator.isDeviceAdmin()) {
-            log("This app is not a device admin. Run the following command to set it as a device admin:\n${Adb.ADB_SET_ADMIN}")
+            log("This app is not a device admin. To access network connections run the following command to set your device as a device admin:\n${Adb.ADB_SET_ADMIN}")
         }
 
         setupUi()
