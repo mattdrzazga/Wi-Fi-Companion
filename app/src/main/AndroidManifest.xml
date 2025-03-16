@@ -6,7 +6,13 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
 
     <application
@@ -29,7 +35,13 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".KeepAdbWifiOnService" />
+        <service
+            android:name=".KeepAdbWifiOnService"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_GFS_SUBTYPE"
+                android:value="Running continuously to keep ADB over WiFi setting on. This setting is turned off whenever there's a change in the network, like switching to a different BSSID. It helps developers work with custom Android devices." />
+        </service>
 
         <receiver
             android:name=".BindAdminReceiver"

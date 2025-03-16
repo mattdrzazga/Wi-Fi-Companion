@@ -3,8 +3,11 @@ package com.mattdrzazga.wificompanion
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.provider.Settings
+import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -24,10 +27,19 @@ class KeepAdbWifiOnService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        startForeground()
+
         log(tag = TAG, message = "onCreate")
         scope.launch {
             keepAdbOverWifiOn()
         }
+    }
+
+    private fun startForeground() {
+        val notificationCreator = NotificationCreator(this)
+        notificationCreator.createNotificationChannel()
+        val notification = notificationCreator.createForegroundServiceNotification()
+        startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID, notification)
     }
 
     override fun onDestroy() {
@@ -85,6 +97,7 @@ class KeepAdbWifiOnService : Service() {
     companion object {
 
         private const val TAG = "KeepAdbWifiOnService"
+        private const val FOREGROUND_SERVICE_NOTIFICATION_ID = 30000
 
         /** This value is annotated with @hide in the Android source code.
          * @see: [android.provider.Settings.Global.ADB_WIFI_ENABLED]
@@ -97,7 +110,7 @@ class KeepAdbWifiOnService : Service() {
         @JvmStatic
         fun start(context: Context) {
             val starter = Intent(context, KeepAdbWifiOnService::class.java)
-            context.startService(starter)
+            ContextCompat.startForegroundService(context, starter)
         }
 
         @JvmStatic

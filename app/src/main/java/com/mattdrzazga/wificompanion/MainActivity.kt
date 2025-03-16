@@ -42,7 +42,11 @@ class MainActivity : AppCompatActivity() {
             it.isEnabled = false
         }
         binding.startServiceButton.setOnClickListener {
-            KeepAdbWifiOnService.start(this)
+            if (hasPostNotificationPermission()) {
+                KeepAdbWifiOnService.start(this)
+            } else {
+                requestPostNotificationPermission()
+            }
         }
         binding.stopServiceButton.setOnClickListener {
             KeepAdbWifiOnService.stop(this)
@@ -105,7 +109,10 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        log("Granted permissions: ${permissions.filterIndexed { index, _ -> grantResults[index] == PackageManager.PERMISSION_GRANTED }}")
+        if (requestCode == POST_NOTIFICATION_PERMISSION_REQUEST_CODE && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            KeepAdbWifiOnService.start(this)
+        }
+        log("Granted permissions: [$requestCode] ${permissions.filterIndexed { index, _ -> grantResults[index] == PackageManager.PERMISSION_GRANTED }}")
     }
 
     override fun onNewIntent(intent: Intent) {
