@@ -3,6 +3,46 @@ package com.mattdrzazga.wificompanion
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiEnterpriseConfig
 import android.net.wifi.WifiEnterpriseConfig.Phase2
+import com.mattdrzazga.wificompanion.NetworkSecurity.NONE
+import com.mattdrzazga.wificompanion.NetworkSecurity.WEP
+import com.mattdrzazga.wificompanion.NetworkSecurity.WPA
+
+enum class NetworkSecurity {
+    NONE,
+    WEP,
+    WPA,
+    WPA2_EAP;
+
+    fun from(name: String?): NetworkSecurity {
+        return when (name?.uppercase()) {
+            null, "" -> NONE
+            "WEP" -> WEP
+            "WPA", "WPA2" -> WPA
+            "WPA2-EAP" -> WPA2_EAP
+            else -> throw IllegalArgumentException("Unknown or unsupported network security type: $name, Only NONE, WEP, WPA and WPA2_EAP are supported.")
+        }
+    }
+}
+
+data class NetworkCredentials(
+    val security: NetworkSecurity,
+    val ssid: String?,
+    val password: String?
+) {
+
+    fun isValid(): Boolean {
+        if (ssid.isNullOrEmpty()) {
+            return false
+        }
+        return when (security) {
+            NONE -> return true
+            WEP,
+            WPA -> !password.isNullOrEmpty()
+
+            else -> false
+        }
+    }
+}
 
 // TODO Check if assigning static BSSID fixes disconnection issues.
 // TODO Add support to hidden networks.
