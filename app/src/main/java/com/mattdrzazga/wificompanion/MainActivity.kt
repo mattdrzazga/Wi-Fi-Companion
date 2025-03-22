@@ -124,6 +124,10 @@ class MainActivity : AppCompatActivity() {
     companion object {
 
         const val CLEAR_DEVICE_ADMIN = "clear_device_admin"
+        const val START_KEEP_ADB_WIFI_ON = "start_adb_wifi_keeper"
+        const val STOP_KEEP_ADB_WIFI_ON = "stop_adb_wifi_keeper"
+        const val FORGET_NETWORK = "forget_network"
+        const val JOIN_NETWORK = "join_network"
 
         private const val ARG_SSID = "ssid"
         private const val ARG_PASSWORD = "password"
