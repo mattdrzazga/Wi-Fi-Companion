@@ -7,7 +7,7 @@ import com.mattdrzazga.wificompanion.MainActivity.Companion.JOIN_NETWORK
 import com.mattdrzazga.wificompanion.MainActivity.Companion.START_KEEP_ADB_WIFI_ON
 import com.mattdrzazga.wificompanion.MainActivity.Companion.STOP_KEEP_ADB_WIFI_ON
 
-interface Ops {
+sealed interface Ops {
 
     data object ClearDeviceAdmin : Ops
 
@@ -15,21 +15,36 @@ interface Ops {
 
     data object StopAdbWifiKeeper : Ops
 
-    data object ForgetNetwork : Ops
+    data class ForgetNetwork(val ssid: String) : Ops
 
-    data object JoinNetwork : Ops
+    data class JoinNetwork(val ssid: String, val password: String, val security: String) : Ops
 
     data object NoOp : Ops
 
     companion object {
 
-        fun fromIntent(bundle: Bundle): Ops = when {
+        private const val ARG_SSID = "ssid"
+        private const val ARG_PASSWORD = "password"
+        private const val ARG_SECURITY = "security"
+
+        fun fromIntent(bundle: Bundle?): Ops = when {
+            bundle == null -> NoOp
             bundle.containsKey(CLEAR_DEVICE_ADMIN) -> ClearDeviceAdmin
             bundle.containsKey(START_KEEP_ADB_WIFI_ON) -> StartAdbWifiKeeper
             bundle.containsKey(STOP_KEEP_ADB_WIFI_ON) -> StopAdbWifiKeeper
-            bundle.containsKey(FORGET_NETWORK) -> ForgetNetwork
-            bundle.containsKey(JOIN_NETWORK) -> JoinNetwork
+            bundle.containsKey(FORGET_NETWORK) -> extractForgetNetworkOps(bundle)
+            bundle.containsKey(JOIN_NETWORK) -> extractJoinNetworkOps(bundle)
             else -> NoOp
         }
+
+        private fun extractForgetNetworkOps(bundle: Bundle): ForgetNetwork =
+            ForgetNetwork(bundle.getString(ARG_SSID, ""))
+
+        private fun extractJoinNetworkOps(bundle: Bundle): JoinNetwork =
+            JoinNetwork(
+                ssid = bundle.getString(ARG_SSID, ""),
+                password = bundle.getString(ARG_PASSWORD, ""),
+                security = bundle.getString(ARG_SECURITY, ""),
+            )
     }
 }

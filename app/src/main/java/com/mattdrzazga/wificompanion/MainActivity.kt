@@ -7,6 +7,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.mattdrzazga.wificompanion.Ops.ClearDeviceAdmin
+import com.mattdrzazga.wificompanion.Ops.ForgetNetwork
+import com.mattdrzazga.wificompanion.Ops.JoinNetwork
+import com.mattdrzazga.wificompanion.Ops.NoOp
+import com.mattdrzazga.wificompanion.Ops.StartAdbWifiKeeper
+import com.mattdrzazga.wificompanion.Ops.StopAdbWifiKeeper
 import com.mattdrzazga.wificompanion.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -42,14 +48,10 @@ class MainActivity : AppCompatActivity() {
             it.isEnabled = false
         }
         binding.startServiceButton.setOnClickListener {
-            if (hasPostNotificationPermission()) {
-                KeepAdbWifiOnService.start(this)
-            } else {
-                requestPostNotificationPermission()
-            }
+            checkPermissionAndStartAdbWifiService()
         }
         binding.stopServiceButton.setOnClickListener {
-            KeepAdbWifiOnService.stop(this)
+            stopAdbWifiService()
         }
     }
 
@@ -59,34 +61,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun processIntent(intent: Intent) {
-        // Clear device admin if needed
-        val shouldClearDeviceAdmin = intent.extras?.containsKey(CLEAR_DEVICE_ADMIN) ?: false
-        if (shouldClearDeviceAdmin) {
-            if (removeDeviceAdmin()) {
-                log("Removed device admin")
-                finish()
-                return
+        when (val op = Ops.fromIntent(intent.extras)) {
+            ClearDeviceAdmin -> {
+                // Clear device admin if needed
+                if (removeDeviceAdmin()) {
+                    log("Removed device admin")
+                    finish()
+                    return
+                }
+            }
+
+            is ForgetNetwork -> {
+                log("Forgetting network: ${op.ssid}")
+            }
+
+            is JoinNetwork -> {
+                log("Connecting to network: ${op.ssid}")
+            }
+
+            NoOp -> {
+                log("Invalid arguments. Print help")
+            }
+
+            StartAdbWifiKeeper -> {
+                log("Starting service")
+                checkPermissionAndStartAdbWifiService()
+            }
+            StopAdbWifiKeeper -> {
+                log("Stopping service")
+                stopAdbWifiService()
             }
         }
-
-        val ssid: String? = intent.getStringExtra(ARG_SSID)
-        val password: String? = intent.getStringExtra(ARG_PASSWORD)
-        val security: String? = intent.getStringExtra(ARG_SECURITY)
-
-        if (ssid != null && security == null && password == null) {
-            log("Trying to connect to unprotected network $ssid")
-//            val wifiManager = WifiManager(this)
-//            wifiManager.connectToWifi(ssid, password)
-//            finish()
-        } else if (ssid != null && security != null && password != null) {
-            log("Trying to connect to network: $ssid")
-//            val wifiManager = WifiManager(this)
-//            wifiManager.connectToWifi(ssid)
-//            finish()
-        } else {
-            log("Invalid arguments. Print help")
-        }
-
 
         if (hasNetworkPermission()) {
             WifiManager(this).getWifiConfigurationFor("yourssid")
@@ -101,6 +106,18 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return false
+    }
+
+    private fun stopAdbWifiService() {
+        KeepAdbWifiOnService.stop(this)
+    }
+
+    private fun checkPermissionAndStartAdbWifiService() {
+        if (hasPostNotificationPermission()) {
+            KeepAdbWifiOnService.start(this)
+        } else {
+            requestPostNotificationPermission()
+        }
     }
 
     override fun onRequestPermissionsResult(
