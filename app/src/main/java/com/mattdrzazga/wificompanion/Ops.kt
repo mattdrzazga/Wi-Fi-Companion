@@ -15,7 +15,20 @@ sealed interface Ops {
 
     data object StopAdbWifiKeeper : Ops
 
-    data class ForgetNetwork(val ssid: String) : Ops
+    data class ForgetNetwork(val ssid: String) : Ops {
+
+        val isValid = ssid.isNotBlank()
+
+        val error: String = if (isValid) {
+            ""
+        } else {
+            EMPTY_SSID_ERROR
+        }
+
+        companion object {
+            private const val EMPTY_SSID_ERROR = "SSID must not be empty!"
+        }
+    }
 
     data class JoinNetwork(val ssid: String, val password: String, val security: String) : Ops
 
@@ -38,7 +51,7 @@ sealed interface Ops {
         }
 
         private fun extractForgetNetworkOps(bundle: Bundle): ForgetNetwork =
-            ForgetNetwork(bundle.getString(ARG_SSID, ""))
+            ForgetNetwork(bundle.getString(FORGET_NETWORK, ""))
 
         private fun extractJoinNetworkOps(bundle: Bundle): JoinNetwork =
             JoinNetwork(
