@@ -72,7 +72,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             is ForgetNetwork -> {
-                log("Forgetting network: ${op.ssid}")
+                if (op.isValid) {
+                    log("Forgetting network: '${op.ssid}'")
+                    WifiManager(this).forgetNetwork(op.ssid)
+                } else {
+                    logw("Could not forget network, reason: ${op.error}")
+                }
             }
 
             is JoinNetwork -> {
@@ -87,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                 log("Starting service")
                 checkPermissionAndStartAdbWifiService()
             }
+
             StopAdbWifiKeeper -> {
                 log("Stopping service")
                 stopAdbWifiService()
